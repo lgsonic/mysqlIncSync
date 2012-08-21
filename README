@@ -1,0 +1,1 @@
+A mysql incremental synchronization tool which can parse mysql row-format binlog and process the incremental data.
