@@ -618,6 +618,18 @@ CRedisClientPool::RedisClientPtr_t CRedisClientPool::GetRedisClient(const char *
 	}
 }
 
+CRedisClientPool::RedisClientPtr_t CRedisClientPool::GetRedisClient(int nSeq)
+{
+	if((nSeq >= 0) && (nSeq < m_RedisClientList.size()))
+	{
+		return m_RedisClientList[nSeq];
+	}
+	else
+	{
+		return m_RedisClientList[0];
+	}
+}
+
 void CRedisManager::Init(const char * szIpPorts)
 {
 	CRedisClientPool::GetInstance().Init(szIpPorts);
@@ -638,7 +650,7 @@ bool CRedisManager::Set(const char * pData, size_t nDataLen)
 	int nDate = atoi(strDate.c_str());
 	if(strDate != strLastDate)
 	{
-		pRedisClient = CRedisClientPool::GetInstance().GetRedisClient(strDateKey.c_str());
+		pRedisClient = CRedisClientPool::GetInstance().GetRedisClient(0);
 		if(!pRedisClient) return false;
 		if(!pRedisClient->ZAdd(strDateKey.c_str(), strDateKey.size(), nDate, strDate.c_str(), strDate.size())) return false;
 		std::vector<int> nDateList;
@@ -653,7 +665,7 @@ bool CRedisManager::Set(const char * pData, size_t nDataLen)
 		
 	int64 nSeq = 0;
 	string_t strSeqKey = strSeqKeyPrefix + strDate;
-	pRedisClient = CRedisClientPool::GetInstance().GetRedisClient(strSeqKey.c_str());
+	pRedisClient = CRedisClientPool::GetInstance().GetRedisClient(0);
 	if(!pRedisClient) return false;
 	if(!pRedisClient->IncrBy(strSeqKey.c_str(), strSeqKey.size(), 1, nSeq)) return false;
 	

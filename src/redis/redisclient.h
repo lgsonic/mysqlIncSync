@@ -54,6 +54,7 @@ public:
 	}
 	void Init(const char * szIpPorts);
 	RedisClientPtr_t GetRedisClient(const char * szKey);
+	RedisClientPtr_t GetRedisClient(int nSeq);
 protected:
 	CRedisClientPool() {}
 	~CRedisClientPool();
