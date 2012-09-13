@@ -137,7 +137,7 @@ struct st_RowValue
 
 static const int nMaxPath = 255;
 static const int nConfigBufSize = 1024;
-static std::string strConfigFile = "config.ini";
+static std::string strConfigFile = "mysqlIncSync.ini";
 static st_Config stConfigValue;
 
 
@@ -2368,7 +2368,7 @@ bool display_log(const std::string & strLog)
 
 bool write_log_to_redis(const std::string & strLog)
 {
-  if (!CRedisManager::GetInstance().Set(strLog.c_str(), strLog.size()))
+  if (!CRedisManager::GetInstance().SetValue(strLog.c_str(), strLog.size()))
   {
     LOG(ERROR)("write_log_to_redis failed!");
     return false;
@@ -2434,8 +2434,19 @@ void daemon()
 
 #endif
 
+#define MYSQLINCSYNC_VERSION "1.0.0"
+
 int main(int argc, char** argv)
 {
+  if (argc == 2) 
+  {
+    if (strcmp(argv[1], "-v") == 0)
+    {
+      printf("version: %s\n", MYSQLINCSYNC_VERSION);
+    }
+    return 0;
+  }
+
   daemon();
   	
   char **defaults_argv;

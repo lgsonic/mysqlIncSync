@@ -12,7 +12,7 @@ typedef std::vector<unsigned char> dataBuffer_t;
 class CRedisClient
 {
 public:
-	CRedisClient(): m_nTimeout(100), m_redis(NULL) {}
+	CRedisClient(): m_nTimeout(500), m_redis(NULL) {}
 	~CRedisClient()
 	{
 		__Disconnect();
@@ -71,10 +71,16 @@ public:
 		return _s;
 	}
 	void Init(const char * szIpPorts);
-	bool Set(const char * pData, size_t nDataLen);
+	bool SetValue(const char * pData, size_t nDataLen);
+public:
+	bool GetValue(const char * szKey, size_t nKeyLen, dataBuffer_t & bufResult);
+	bool GetValueBySeq(const string_t & strDate, const int64 & nSeq, dataBuffer_t & bufResult);
+	bool GetSeq(const string_t & strCurDate, const int64 & nCurSeq, string_t & strDate, int64 & nSeq);
 protected:
 	CRedisManager() {}
 	~CRedisManager() {}
+private:
+	bool __GetSeqByDate(const string_t & strDate, int64 & nSeq);
 };
 
 #endif
