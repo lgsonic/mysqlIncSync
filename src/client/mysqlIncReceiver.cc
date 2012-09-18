@@ -370,7 +370,7 @@ int main(int argc, char** argv)
       if (nCurtime > nLasttime)
       {
         write_config();
-	 nLasttime = nCurtime;
+        nLasttime = nCurtime;
       }
     }
   }

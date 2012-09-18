@@ -2434,7 +2434,7 @@ void daemon()
 
 #endif
 
-#define MYSQLINCSYNC_VERSION "1.0.0"
+#define MYSQLINCSYNC_VERSION "1.0.1"
 
 int main(int argc, char** argv)
 {
@@ -2448,6 +2448,8 @@ int main(int argc, char** argv)
   }
 
   daemon();
+
+  if (chdir(get_app_folder().c_str()))  { LOG(ERROR)("chdir failed"); }
   	
   char **defaults_argv;
   Exit_status retval= OK_CONTINUE;
