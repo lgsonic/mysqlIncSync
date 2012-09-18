@@ -1,0 +1,17 @@
+data format in redis:
+1. recent days
+type: Sorted set
+key: datelist
+value: 20120912, 20120913, 20120914
+2. latest sequence number of one day
+type: String
+key: s.20120912
+value: 125
+3. value of one record
+type: String
+key: v.20120912.123
+value: {"command":"insert","table":"test_db.test_tab","timestamp":1347876076,"fieldnum":3,"newrow":{"0":"30024","1":"abcde","2":"0"}}
+key: v.20120912.124
+value: {"command":"update","table":"test_db.test_tab","timestamp":1347876077,"fieldnum":3,"newrow":{"0":"30020","1":"abcde","2":"0"},"oldrow":{"0":"30020","1":"hjkl","2":"16"}}
+key: v.20120912.125
+value: {"command":"delete","table":"test_db.test_tab","timestamp":1347876078,"fieldnum":3,"oldrow":{"0":"30024","1":"abcde","2":"0"}}
