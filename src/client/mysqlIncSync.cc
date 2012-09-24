@@ -2072,6 +2072,9 @@ static Exit_status dump_local_log_entries(PRINT_EVENT_INFO *print_event_info,
   IO_CACHE cache,*file= &cache;
   uchar tmp_buff[BIN_LOG_HEADER_SIZE];
   Exit_status retval= OK_CONTINUE;
+#if 1
+  int ev_count = 0;
+#endif
 
   if (logname && strcmp(logname, "-") != 0)
   {
@@ -2156,6 +2159,10 @@ static Exit_status dump_local_log_entries(PRINT_EVENT_INFO *print_event_info,
     my_off_t old_off = my_b_tell(file);
 #if 1
     logendpos = old_off;
+    if(++ev_count > 10000)	// limit ev count for every dump
+    {
+      goto end;
+    }
 #endif
     Log_event* ev = Log_event::read_log_event(file, glob_description_event);
     if (!ev)
@@ -2434,7 +2441,7 @@ void daemon()
 
 #endif
 
-#define MYSQLINCSYNC_VERSION "1.0.1"
+#define MYSQLINCSYNC_VERSION "1.0.2"
 
 int main(int argc, char** argv)
 {
@@ -2635,7 +2642,7 @@ int main(int argc, char** argv)
 
     }
     
-    usleep(1000000);
+    usleep(1000);
   
   }
 
