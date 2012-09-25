@@ -2441,7 +2441,7 @@ void daemon()
 
 #endif
 
-#define MYSQLINCSYNC_VERSION "1.0.2"
+#define MYSQLINCSYNC_VERSION "1.0.4"
 
 int main(int argc, char** argv)
 {
@@ -2593,12 +2593,12 @@ int main(int argc, char** argv)
   {
     bool bStart = false;
 	
-    if (nLogStartIndex == LogNameList.size() -1)
+    if (nLogStartIndex == LogNameList.size() - 1)
     {
       bStart = true;
     }
 	
-    for (size_t i = nLogStartIndex; i < LogNameList.size(); ++i)
+    for (size_t i = nLogStartIndex; i < LogNameList.size(); )
     {
       nLogStartIndex = i;
       
@@ -2612,7 +2612,8 @@ int main(int argc, char** argv)
       }
       
       if (!bStart)
-      {		
+      {
+        ++i;
         continue;
       }
       
@@ -2628,18 +2629,23 @@ int main(int argc, char** argv)
       {
         write_config();
       }
-  
-      if ((i == LogNameList.size() -1) && (nCurPos == stConfigValue.binlog_last_offset))
-      {
-        if (get_log_name_list(stConfigValue.binlog_index.c_str(), LogNameList) != OK_CONTINUE)
-        {
-          LOG(ERROR)("get_log_name_list failed");
-          exit(1);
-        }
-	
-        nLogStartIndex = 0;
-      }
 
+      if (nCurPos == stConfigValue.binlog_last_offset)
+      {
+        if (i == LogNameList.size() - 1)
+        {
+          if (get_log_name_list(stConfigValue.binlog_index.c_str(), LogNameList) != OK_CONTINUE)
+          {
+            LOG(ERROR)("get_log_name_list failed");
+            exit(1);
+          }
+  	
+          nLogStartIndex = 0;
+        }
+
+        ++i;
+      }
+  
     }
     
     usleep(1000);
