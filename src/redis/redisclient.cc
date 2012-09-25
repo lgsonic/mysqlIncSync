@@ -693,6 +693,16 @@ bool CRedisManager::GetValueBySeq(const string_t & strDate, const int64 & nSeq ,
 	return pRedisClient->Get(szKey, strlen(szKey), bufResult);
 }
 
+bool CRedisManager::ExistsBySeq(const string_t & strDate, const int64 & nSeq, int64 & nResult)
+{
+	char szKey[32] = {0};
+	snprintf(szKey, 32, "%s%s.%lld", strValueKeyPrefix.c_str(), strDate.c_str(), nSeq);
+
+	CRedisClient * pRedisClient = CRedisClientPool::GetInstance().GetRedisClient(szKey);
+	if(!pRedisClient) return false;
+	return pRedisClient->Exists(szKey, strlen(szKey), nResult);
+}
+
 bool CRedisManager::GetSeq(const string_t & strCurDate, const int64 & nCurSeq, string_t & strDate, int64 & nSeq)
 {
 	CRedisClient * pRedisClient = CRedisClientPool::GetInstance().GetRedisClient(0);
@@ -742,6 +752,7 @@ bool CRedisManager::__GetSeqByDate(const string_t & strDate, int64 & nSeq)
 	CRedisClient * pRedisClient = CRedisClientPool::GetInstance().GetRedisClient(0);
 	if(!pRedisClient) return false;
 	if(!pRedisClient->Get(strSeqKey.c_str(), strSeqKey.size(), bufResult)) return false;
-	nSeq = atoll((char*)&bufResult[0]);
+	string_t strSeqValue(bufResult.begin(), bufResult.end());
+	nSeq = atoll(strSeqValue.c_str());
 	return true;
 }
