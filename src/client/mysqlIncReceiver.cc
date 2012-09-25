@@ -253,16 +253,16 @@ public:
     static Ext_log_process _s;
     return _s;
   }
-  void Process(const std::string & strLog)
+  bool Process(const std::string & strLog)
   {
     for (size_t i = 0; i < m_Processors.size(); ++i)
     {
       if (!m_Processors[i](strLog))
       {
-        sleep(1);
-        exit(1);
+        return false;
       }
     }
+    return true;
   }
 protected:
   Ext_log_process()
@@ -298,7 +298,7 @@ void daemon()
 }
 
 
-#define MYSQLINCRECEIVER_VERSION "1.0.0"
+#define MYSQLINCRECEIVER_VERSION "1.0.1"
 
 int main(int argc, char** argv)
 {
@@ -340,23 +340,42 @@ int main(int argc, char** argv)
       stConfigValue.seq = 0;
     }
 
-    for (int64 i = stConfigValue.seq + 1; i <= nSeq; ++i)
+    for (int64 i = stConfigValue.seq + 1; i <= nSeq; )
     {
       dataBuffer_t bufResult;
       if (CRedisManager::GetInstance().GetValueBySeq(strDate, i, bufResult))
       {
         std::string strRowValue(bufResult.begin(), bufResult.end());
-	 st_RowValue row_value(strRowValue);
-	 if (check_table_valid(row_value.table.c_str()))
+        st_RowValue row_value(strRowValue);
+        if (check_table_valid(row_value.table.c_str()))
         {
-          LOG(INFO)("%s", strRowValue.c_str());
+          LOG(INFO)("%s.%lld: %s", strDate.c_str(), i, strRowValue.c_str());
           
-          Ext_log_process::GetInstance().Process(strRowValue);
+          if (Ext_log_process::GetInstance().Process(strRowValue))
+          {
+            ++i;
+          }
+		  
+          continue;
+        }
+        else
+        {
+          ++i;
+          continue;
         }
       }
       else
       {
-        // ...
+        int64 nResult = 0;
+        if (CRedisManager::GetInstance().ExistsBySeq(strDate, i, nResult))
+        {
+          if (nResult == 0)
+          {
+            ++i;	
+          }
+        }
+		
+        continue;
       }
     }
   
