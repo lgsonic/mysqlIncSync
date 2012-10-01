@@ -108,6 +108,7 @@ struct st_Config
   int64 seq;
   std::string tables;
   std::string redis_servers;
+  int redis_dbid;
   int log_level;
 };
 
@@ -183,6 +184,11 @@ static Exit_status read_config()
   memset(szBuf, 0, nConfigBufSize);
   inireader.getValue("config", "redis_servers", szBuf, &nSize);
   stConfigValue.redis_servers = szBuf;
+
+  nSize = nConfigBufSize;
+  memset(szBuf, 0, nConfigBufSize);
+  inireader.getValue("config", "redis_dbid", szBuf, &nSize);
+  stConfigValue.redis_dbid = atoi(szBuf);
   
   nSize = nConfigBufSize;
   memset(szBuf, 0, nConfigBufSize);
@@ -208,6 +214,8 @@ static Exit_status write_config()
   iniwriter.SetValue("config", "seq", szBuf);
   iniwriter.SetValue("config", "tables", stConfigValue.tables.c_str());
   iniwriter.SetValue("config", "redis_servers", stConfigValue.redis_servers.c_str());
+  snprintf(szBuf, 64, "%d", stConfigValue.redis_dbid);
+  iniwriter.SetValue("config", "redis_dbid", szBuf);
   snprintf(szBuf, 64, "%d", stConfigValue.log_level);
   iniwriter.SetValue("config", "log_level", szBuf);
 
@@ -298,7 +306,7 @@ void daemon()
 }
 
 
-#define MYSQLINCRECEIVER_VERSION "1.0.1"
+#define MYSQLINCRECEIVER_VERSION "1.0.2"
 
 int main(int argc, char** argv)
 {
@@ -322,7 +330,7 @@ int main(int argc, char** argv)
   }
   
   CLog::SetLogLevel((CLog::LogLevel_t)(stConfigValue.log_level));
-  CRedisManager::GetInstance().Init(stConfigValue.redis_servers.c_str());
+  CRedisManager::GetInstance().Init(stConfigValue.redis_servers.c_str(), stConfigValue.redis_dbid);
 
   string_t strDate;
   int64 nSeq = 0;
@@ -340,7 +348,8 @@ int main(int argc, char** argv)
       stConfigValue.seq = 0;
     }
 
-    for (int64 i = stConfigValue.seq + 1; i <= nSeq; )
+    int64 i = stConfigValue.seq + 1;		
+    for ( ; (i <= nSeq) && (i <= stConfigValue.seq + 10000); )
     {
       dataBuffer_t bufResult;
       if (CRedisManager::GetInstance().GetValueBySeq(strDate, i, bufResult))
@@ -366,23 +375,34 @@ int main(int argc, char** argv)
       }
       else
       {
+        LOG(WARNING)("Get value failed: %s.%lld", strDate.c_str(), i);
+	
         int64 nResult = 0;
         if (CRedisManager::GetInstance().ExistsBySeq(strDate, i, nResult))
         {
           if (nResult == 0)
           {
-            ++i;	
+            if (i == nSeq)
+            {
+              break;
+            }
+            else
+            {
+              LOG(DEBUG)("Value not exist: %s.%lld", strDate.c_str(), i);
+              ++i;
+            }
           }
         }
 		
         continue;
       }
     }
-  
-    if ((strDate != stConfigValue.date) || (nSeq != stConfigValue.seq))
+
+    int64 nCurSeq = --i;
+    if ((strDate != stConfigValue.date) || (nCurSeq != stConfigValue.seq))
     {
       stConfigValue.date = strDate;
-      stConfigValue.seq = nSeq;
+      stConfigValue.seq = nCurSeq;
 
       static int64 nLasttime = 0;
       int64 nCurtime = time(0);

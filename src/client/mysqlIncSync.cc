@@ -85,6 +85,7 @@ struct st_Config
   my_off_t binlog_last_offset;
   std::string tables;
   std::string redis_servers;
+  int redis_dbid;
   int log_level;
 };
 
@@ -2300,6 +2301,11 @@ static Exit_status read_config()
   memset(szBuf, 0, nConfigBufSize);
   inireader.getValue("config", "redis_servers", szBuf, &nSize);
   stConfigValue.redis_servers = szBuf;
+
+  nSize = nConfigBufSize;
+  memset(szBuf, 0, nConfigBufSize);
+  inireader.getValue("config", "redis_dbid", szBuf, &nSize);
+  stConfigValue.redis_dbid = atoi(szBuf);
   
   nSize = nConfigBufSize;
   memset(szBuf, 0, nConfigBufSize);
@@ -2326,6 +2332,8 @@ static Exit_status write_config()
   iniwriter.SetValue("config", "binlog_last_offset", szBuf);
   iniwriter.SetValue("config", "tables", stConfigValue.tables.c_str());
   iniwriter.SetValue("config", "redis_servers", stConfigValue.redis_servers.c_str());
+  snprintf(szBuf, 64, "%d", stConfigValue.redis_dbid);
+  iniwriter.SetValue("config", "redis_dbid", szBuf);
   snprintf(szBuf, 64, "%d", stConfigValue.log_level);
   iniwriter.SetValue("config", "log_level", szBuf);
 
@@ -2441,7 +2449,7 @@ void daemon()
 
 #endif
 
-#define MYSQLINCSYNC_VERSION "1.0.4"
+#define MYSQLINCSYNC_VERSION "1.0.5"
 
 int main(int argc, char** argv)
 {
@@ -2587,7 +2595,7 @@ int main(int argc, char** argv)
   }
 
   CLog::SetLogLevel((CLog::LogLevel_t)(stConfigValue.log_level));
-  CRedisManager::GetInstance().Init(stConfigValue.redis_servers.c_str());
+  CRedisManager::GetInstance().Init(stConfigValue.redis_servers.c_str(), stConfigValue.redis_dbid);
   
   while (1)
   {

@@ -2,10 +2,11 @@
 #include "conhash.h"
 #include "../log/log.h"
 
-void CRedisClient::Init(const char *ip, int port)
+void CRedisClient::Init(const char *ip, int port, int dbid)
 {
 	m_ServerIp = ip;
 	m_ServerPort = port;
+	m_DbId = dbid;
 
 	 __Reconnect();
 }
@@ -22,7 +23,16 @@ bool CRedisClient::__Reconnect()
 		{
 			LOG(INFO)("Redis connect success: %s:%d", m_ServerIp.c_str(), m_ServerPort);
 			redisSetTimeout(m_redis, timeout);
-			return true;
+
+			if(SelectDb(m_DbId))
+			{
+				return true;
+			}
+			else
+			{
+				__Disconnect();
+				return false;
+			}
 		}
 		else
 		{
@@ -55,6 +65,47 @@ bool CRedisClient::__MakesureConnected()
 	}
 
 	return __Reconnect();
+}
+
+bool CRedisClient::SelectDb(int nDbId)
+{
+	if(!__MakesureConnected())
+	{
+		return false;
+	}
+
+	if(nDbId < 0)
+	{
+		return false;
+	}
+
+	bool bRet = false;
+	redisReply * reply = (redisReply *)redisCommand(m_redis, "SELECT %d", nDbId);
+
+	if(reply)
+	{
+		if((reply->type == REDIS_REPLY_ERROR) && reply->str)
+		{
+			LOG(WARNING)("Redis error: %s", reply->str);
+		}
+		if(reply->type == REDIS_REPLY_STATUS)
+		{
+			if((reply->len == 2) && !strncmp(reply->str, "OK", 2))
+			{
+				bRet = true;
+			}
+		}
+
+		freeReplyObject(reply);
+		reply = NULL;
+	}
+	else
+	{
+		LOG(WARNING)("redisCommand failed: SELECT %d", nDbId);
+		__Reconnect();
+	}
+
+	return bRet;
 }
 
 bool CRedisClient::Exists(const char * szKey, size_t nKeyLen, int64 & nResult)
@@ -549,7 +600,7 @@ CRedisClientPool::~CRedisClientPool()
 	}
 }
 
-void CRedisClientPool::Init(const char * szIpPorts)
+void CRedisClientPool::Init(const char * szIpPorts, int nDbId)
 {
 	if(!szIpPorts)
 	{
@@ -566,7 +617,7 @@ void CRedisClientPool::Init(const char * szIpPorts)
 		
 		nRedisNum++;
 		RedisClientPtr_t pRedisClient = new CRedisClient();
-		pRedisClient->Init(strIp.c_str(), nPort);
+		pRedisClient->Init(strIp.c_str(), nPort, nDbId);
 		m_RedisClientList.push_back(pRedisClient);
 
 		int nPos2 = strIpPorts.find(",");
@@ -630,9 +681,9 @@ CRedisClientPool::RedisClientPtr_t CRedisClientPool::GetRedisClient(int nSeq)
 	}
 }
 
-void CRedisManager::Init(const char * szIpPorts)
+void CRedisManager::Init(const char * szIpPorts, int nDbId)
 {
-	CRedisClientPool::GetInstance().Init(szIpPorts);
+	CRedisClientPool::GetInstance().Init(szIpPorts, nDbId);
 }
 
 static const string_t strDateKey = "datelist";

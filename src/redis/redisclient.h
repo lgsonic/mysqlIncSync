@@ -17,8 +17,9 @@ public:
 	{
 		__Disconnect();
 	}
-	void Init(const char *ip, int port);
+	void Init(const char *ip, int port, int dbid = 0);
 public:
+	bool SelectDb(int nDbId);
 	bool Exists(const char * szKey, size_t nKeyLen, int64 & nResult);
 	bool Get(const char * szKey, size_t nKeyLen, dataBuffer_t & bufResult);
 	bool Set(const char * szKey, size_t nKeyLen, const char * pData, size_t nDataLen, size_t Expiry = 0);
@@ -38,6 +39,7 @@ private:
 private:
 	string_t m_ServerIp;
 	int m_ServerPort;
+	int m_DbId;
 	size_t m_nTimeout;
 	redisContext * m_redis;
 };
@@ -52,7 +54,7 @@ public:
 		static CRedisClientPool _s;
 		return _s;
 	}
-	void Init(const char * szIpPorts);
+	void Init(const char * szIpPorts, int nDbId = 0);
 	RedisClientPtr_t GetRedisClient(const char * szKey);
 	RedisClientPtr_t GetRedisClient(int nSeq);
 protected:
@@ -70,7 +72,7 @@ public:
 		static CRedisManager _s;
 		return _s;
 	}
-	void Init(const char * szIpPorts);
+	void Init(const char * szIpPorts, int nDbId = 0);
 	bool SetValue(const char * pData, size_t nDataLen);
 public:
 	bool GetValue(const char * szKey, size_t nKeyLen, dataBuffer_t & bufResult);
