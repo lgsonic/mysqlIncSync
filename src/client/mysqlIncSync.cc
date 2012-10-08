@@ -2449,7 +2449,7 @@ void daemon()
 
 #endif
 
-#define MYSQLINCSYNC_VERSION "1.0.5"
+#define MYSQLINCSYNC_VERSION "1.0.6"
 
 int main(int argc, char** argv)
 {

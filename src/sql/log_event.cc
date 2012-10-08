@@ -1804,11 +1804,11 @@ log_event_print_value(IO_CACHE *file, const uchar *ptr,
       part=(int) (tmp & 31);
       *pos--= (char) ('0'+part%10);
       *pos--= (char) ('0'+part/10);
-      *pos--= ':';
+      *pos--= '-';
       part=(int) (tmp >> 5 & 15);
       *pos--= (char) ('0'+part%10);
       *pos--= (char) ('0'+part/10);
-      *pos--= ':';
+      *pos--= '-';
       part=(int) (tmp >> 9);
       *pos--= (char) ('0'+part%10); part/=10;
       *pos--= (char) ('0'+part%10); part/=10;
@@ -1826,7 +1826,7 @@ log_event_print_value(IO_CACHE *file, const uchar *ptr,
     {
       uint i32= uint3korr(ptr);
 #ifdef PRINT_VERBOSE
-      my_b_printf(file , "'%04d:%02d:%02d'",
+      my_b_printf(file , "'%04d-%02d-%02d'",
                   (i32 / (16L * 32L)), (i32 / 32L % 16L), (i32 % 32L));
 #endif
       my_snprintf(typestr, typestr_length, "DATE");
