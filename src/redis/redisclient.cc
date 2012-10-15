@@ -681,17 +681,24 @@ CRedisClientPool::RedisClientPtr_t CRedisClientPool::GetRedisClient(int nSeq)
 	}
 }
 
-void CRedisManager::Init(const char * szIpPorts, int nDbId)
-{
-	CRedisClientPool::GetInstance().Init(szIpPorts, nDbId);
-}
 
 static const string_t strDateKey = "datelist";
 static const string_t strSeqKeyPrefix = "s.";
 static const string_t strValueKeyPrefix = "v.";
-static const size_t nRecentDay = 3;
-static const size_t nExpiry = 259200;
+static size_t nRecentDay = 3;
+static size_t nExpiry = 259200;
 static string_t strLastDate;
+
+void CRedisManager::Init(const char * szIpPorts, int nDbId, int nExpireDays)
+{
+	if(nExpireDays > (int)nRecentDay)
+	{
+		nRecentDay = nExpireDays;
+		nExpiry = nRecentDay * 86400;
+	}
+	
+	CRedisClientPool::GetInstance().Init(szIpPorts, nDbId);
+}
 	
 bool CRedisManager::SetValue(const char * pData, size_t nDataLen)
 {

@@ -87,6 +87,7 @@ struct st_Config
   std::string redis_servers;
   int redis_dbid;
   int log_level;
+  int expire_days;
 };
 
 struct st_RowValue
@@ -2312,6 +2313,11 @@ static Exit_status read_config()
   inireader.getValue("config", "log_level", szBuf, &nSize);
   stConfigValue.log_level = atoi(szBuf);
 
+  nSize = nConfigBufSize;
+  memset(szBuf, 0, nConfigBufSize);
+  inireader.getValue("config", "expire_days", szBuf, &nSize);
+  stConfigValue.expire_days = atoi(szBuf);
+
   inireader.close();
   return OK_CONTINUE;
 }
@@ -2336,6 +2342,8 @@ static Exit_status write_config()
   iniwriter.SetValue("config", "redis_dbid", szBuf);
   snprintf(szBuf, 64, "%d", stConfigValue.log_level);
   iniwriter.SetValue("config", "log_level", szBuf);
+  snprintf(szBuf, 64, "%d", stConfigValue.expire_days);
+  iniwriter.SetValue("config", "expire_days", szBuf);
 
   iniwriter.close();
   return OK_CONTINUE;
@@ -2449,7 +2457,7 @@ void daemon()
 
 #endif
 
-#define MYSQLINCSYNC_VERSION "1.0.6"
+#define MYSQLINCSYNC_VERSION "1.0.7"
 
 int main(int argc, char** argv)
 {
@@ -2595,7 +2603,7 @@ int main(int argc, char** argv)
   }
 
   CLog::SetLogLevel((CLog::LogLevel_t)(stConfigValue.log_level));
-  CRedisManager::GetInstance().Init(stConfigValue.redis_servers.c_str(), stConfigValue.redis_dbid);
+  CRedisManager::GetInstance().Init(stConfigValue.redis_servers.c_str(), stConfigValue.redis_dbid, stConfigValue.expire_days);
   
   while (1)
   {

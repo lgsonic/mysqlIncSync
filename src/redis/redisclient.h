@@ -72,7 +72,7 @@ public:
 		static CRedisManager _s;
 		return _s;
 	}
-	void Init(const char * szIpPorts, int nDbId = 0);
+	void Init(const char * szIpPorts, int nDbId = 0, int nExpireDays = 0);
 	bool SetValue(const char * pData, size_t nDataLen);
 public:
 	bool GetValue(const char * szKey, size_t nKeyLen, dataBuffer_t & bufResult);
