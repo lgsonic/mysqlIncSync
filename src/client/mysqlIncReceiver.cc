@@ -306,7 +306,7 @@ void daemon()
 }
 
 
-#define MYSQLINCRECEIVER_VERSION "1.0.2"
+#define MYSQLINCRECEIVER_VERSION "1.0.3"
 
 int main(int argc, char** argv)
 {
@@ -392,6 +392,10 @@ int main(int argc, char** argv)
               ++i;
             }
           }
+        }
+        else
+        {
+          usleep(1000000);
         }
 		
         continue;
