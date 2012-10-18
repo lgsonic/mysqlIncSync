@@ -761,13 +761,14 @@ bool CRedisManager::ExistsBySeq(const string_t & strDate, const int64 & nSeq, in
 	return pRedisClient->Exists(szKey, strlen(szKey), nResult);
 }
 
-bool CRedisManager::GetSeq(const string_t & strCurDate, const int64 & nCurSeq, string_t & strDate, int64 & nSeq)
+bool CRedisManager::GetSeq(const string_t & strCurDate, const int64 & nCurSeq, string_t & strDate, int64 & nSeq, bool & bHaveNextDate)
 {
 	CRedisClient * pRedisClient = CRedisClientPool::GetInstance().GetRedisClient(0);
 	if(!pRedisClient) return false;
 	std::vector<int> nDateList;
 	if(!pRedisClient->ZRange(strDateKey.c_str(), strDateKey.size(), 0, nRecentDay-1, nDateList)) return false;
 
+	bHaveNextDate = false;
 	int nCurDate = atoi(strCurDate.c_str());
 	for(size_t i = 0; i < nDateList.size(); ++i)
 	{
@@ -778,6 +779,11 @@ bool CRedisManager::GetSeq(const string_t & strCurDate, const int64 & nCurSeq, s
 
 			if(nSeq > nCurSeq)
 			{
+				if((i+1) < nDateList.size())
+				{
+					bHaveNextDate = true;
+				}
+			
 				return true;
 			}
 			else if((i+1) < nDateList.size())

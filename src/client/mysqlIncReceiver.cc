@@ -306,7 +306,7 @@ void daemon()
 }
 
 
-#define MYSQLINCRECEIVER_VERSION "1.0.4"
+#define MYSQLINCRECEIVER_VERSION "1.0.5"
 
 int main(int argc, char** argv)
 {
@@ -334,10 +334,11 @@ int main(int argc, char** argv)
 
   string_t strDate;
   int64 nSeq = 0;
+  bool bHaveNextDate = false;
   	
   while (1)
   {
-    if (!CRedisManager::GetInstance().GetSeq(stConfigValue.date, stConfigValue.seq, strDate, nSeq))
+    if (!CRedisManager::GetInstance().GetSeq(stConfigValue.date, stConfigValue.seq, strDate, nSeq, bHaveNextDate))
     {
     	usleep(1000000);
 	continue;
@@ -384,7 +385,15 @@ int main(int argc, char** argv)
           {
             if (i == nSeq)
             {
-              usleep(1000);
+              if(bHaveNextDate)							
+              {								
+                ++i;							
+              }							
+              else							
+              {								
+                usleep(10000);							
+              }
+			  
               break;
             }
             else

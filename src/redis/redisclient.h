@@ -78,7 +78,7 @@ public:
 	bool GetValue(const char * szKey, size_t nKeyLen, dataBuffer_t & bufResult);
 	bool GetValueBySeq(const string_t & strDate, const int64 & nSeq, dataBuffer_t & bufResult);
 	bool ExistsBySeq(const string_t & strDate, const int64 & nSeq, int64 & nResult);
-	bool GetSeq(const string_t & strCurDate, const int64 & nCurSeq, string_t & strDate, int64 & nSeq);
+	bool GetSeq(const string_t & strCurDate, const int64 & nCurSeq, string_t & strDate, int64 & nSeq, bool & bHaveNextDate);
 protected:
 	CRedisManager() {}
 	~CRedisManager() {}
