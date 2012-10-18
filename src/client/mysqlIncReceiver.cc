@@ -306,7 +306,7 @@ void daemon()
 }
 
 
-#define MYSQLINCRECEIVER_VERSION "1.0.3"
+#define MYSQLINCRECEIVER_VERSION "1.0.4"
 
 int main(int argc, char** argv)
 {
@@ -384,6 +384,7 @@ int main(int argc, char** argv)
           {
             if (i == nSeq)
             {
+              usleep(1000);
               break;
             }
             else
