@@ -306,7 +306,7 @@ void daemon()
 }
 
 
-#define MYSQLINCRECEIVER_VERSION "1.0.5"
+#define MYSQLINCRECEIVER_VERSION "1.0.6"
 
 int main(int argc, char** argv)
 {
