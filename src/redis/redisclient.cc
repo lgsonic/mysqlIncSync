@@ -691,7 +691,7 @@ static string_t strLastDate;
 
 void CRedisManager::Init(const char * szIpPorts, int nDbId, int nExpireDays)
 {
-	if(nExpireDays > (int)nRecentDay)
+	if(nExpireDays > 0)
 	{
 		nRecentDay = nExpireDays;
 		nExpiry = nRecentDay * 86400;
