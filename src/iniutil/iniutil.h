@@ -144,6 +144,7 @@ void CIniReader::_clearSectionList()
 			delete _this_value;
 		}
 		_this_section->valuelist.clear();
+		delete _this_section;
 	}
 	sectionlist.clear();
 }
@@ -376,6 +377,7 @@ void CIniWriter::_clearSectionList()
 			delete _this_value;
 		}
 		_this_section->valuelist.clear();
+		delete _this_section;
 	}
 	sectionlist.clear();
 }
