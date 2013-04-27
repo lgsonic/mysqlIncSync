@@ -1551,10 +1551,10 @@ static Exit_status safe_connect()
   @retval OK_STOP No error, but the end of the specified range of
   events to process has been reached and the program should terminate.
 */
+PRINT_EVENT_INFO print_event_info;
 static Exit_status dump_log_entries(const char* logname, my_off_t logstartpos, my_off_t & logendpos)
 {
   Exit_status rc;
-  PRINT_EVENT_INFO print_event_info;
 
   if (!print_event_info.init_ok())
     return ERROR_STOP;
